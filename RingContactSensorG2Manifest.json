@@ -1,0 +1,31 @@
+{
+        "packageName": "Ring Alarm Contact Sensor G2 - Advanced Driver",
+        "releaseNotes": "v0.1.0 - Initial BETA Release",
+        "documentationLink": "TBD",
+        "communityLink": "TBD",
+        "author": "Mike Dam (@MikeNYC88)",
+        "version": "0.1.0",
+        "minimumHEVersion": "2.4.0",
+        "dateReleased": "2025-22-01",
+        "category": "Security",
+        "tags": [ "ZWave",
+                      "Buttons",
+                      "Doors & Windows",
+                      "Garage Doors",
+                      "Alarm Systems",
+                      "Monitoring",
+                      "Safety & Security",
+                      "Tools & Utilities"
+                    ],
+        "drivers": [
+           {
+                  "id": "c23437bd-bd2f-41ff-a64b-3edbddcdc420",
+                  "name": "Ring Alarm Contact Sensor G2 - Advanced Driver",
+                  "namespace": "MikeNYC88",
+                  "location": "",
+                  "required": true,
+                  "oauth": false,
+                  "description": "This supports chime capability, triggering rules via code, code-less arming, rearming from partial without disarm, driving/syncing with HSM and Modes, and Hub Mesh with HSM on different hub. This also gives you access to all configurable settings for the Ring Alarm Keypad G2."
+           }
+        ]
+}
