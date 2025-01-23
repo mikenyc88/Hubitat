@@ -14,7 +14,8 @@
                       "Monitoring",
                       "Safety & Security",
                       "Tools & Utilities"
-                    ]
+                    ],
+            "id": "d84eddc7-ad20-4b28-a3a1-07bd2b92d025"
         },
         {
             "name": "Ring Alarm Contact Sensor G2 - Advanced Driver",
@@ -29,7 +30,8 @@
                       "Monitoring",
                       "Safety & Security",
                       "Tools & Utilities"
-                    ]
+                    ],
+            "id": "c23437bd-bd2f-41ff-a64b-3edbddcdc420"
         }
     ]
 }
