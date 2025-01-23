@@ -6,7 +6,7 @@
         {
             "name": "Ring Alarm Keypad G2 - Advanced Driver",
             "category": "Security",
-            "location": "https://raw.githubusercontent.com/jkister/hubitat/mikenyc88/Hubitat/Ring/packageManifest.json",
+            "location": "https://github.com/mikenyc88/Hubitat/blob/main/Manifests/Ring-Keypad-G2-Manifest.json",
             "description": "This supports chime capability, triggering rules via code, code-less arming, rearming from partial without disarm, driving/syncing with HSM and Modes, and Hub Mesh with HSM on different hub. This also gives you access to all configurable settings for the Ring Alarm Keypad G2.",
             "tags": [ "ZWave",
                       "Buttons",
@@ -20,7 +20,7 @@
         {
             "name": "Ring Alarm Contact Sensor G2 - Advanced Driver",
             "category": "Security",
-            "location": "https://raw.githubusercontent.com/jkister/hubitat/mikenyc88/Hubitat/Ring/packageManifest.json",
+            "location": "https://github.com/mikenyc88/Hubitat/blob/main/Manifests/Ring-Contact-Sensor-G2-Manifest.json",
             "description": "This supports button functionality and fixes the common issue of the device becoming unresponsive. This also gives you access to all configurable settings for the Ring Alarm Contact Sensor G2.",
             "tags": [ "ZWave",
                       "Buttons",
