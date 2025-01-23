@@ -22,7 +22,7 @@
                   "id": "c23437bd-bd2f-41ff-a64b-3edbddcdc420",
                   "name": "Ring Alarm Contact Sensor G2 - Advanced Driver",
                   "namespace": "MikeNYC88",
-                  "location": "",
+                  "location": "https://github.com/mikenyc88/Hubitat/blob/main/Drivers/Ring-Contact-Sensor-G2-Driver",
                   "required": true,
                   "oauth": false,
                   "description": "This supports chime capability, triggering rules via code, code-less arming, rearming from partial without disarm, driving/syncing with HSM and Modes, and Hub Mesh with HSM on different hub. This also gives you access to all configurable settings for the Ring Alarm Keypad G2."
