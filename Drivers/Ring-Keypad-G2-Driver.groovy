@@ -44,7 +44,7 @@ metadata {
 		command "entry", [[name: "Delay", type: "NUMBER"],[name: "Note", type: "", description: "This command is here to enable use within a Rule. When using in a rule, send 1 'Number' parameter to signify the delay in seconds. If delay is sent, that will become the new default delay. If no delay is sent, default delay is used (see state 'KeypadConfig'). If triggered by HSM, it uses the HSM dictated delay."]]
         command "playSound", [[name: "Play Tone", type: "NUMBER", description: "1..9"]]
         command "resetKeypad", [[name: "clearLockCodes", type: "ENUM", constraints : ["Reset all attributes","Do not reset Lock Codes"], description: "Note : This resets all the keypad attributes/states back to the default (Doesn't affect preferences). Would you like to erase Lock Codes as well? Default : 'Erase all attributes'"]]
-        command "syncKeypadToHSM", [[name: "Note", type: "", description: "This can help re-sync the keypad in the case of odd behaviour/malfunctioning. If this doesn't work, use the resetKeypad command. No input needed."]]
+        command "syncKeypad", [[name: "syncTo", type: "ENUM", constraints : ["HSM","Mode"], description: "HSM or Mode?"],[name: "Note", type: "", description: "Sync this keypad to either HSM or Mode. This can help re-sync the keypad in the case of odd behaviour/malfunctioning. If this doesn't work, use the resetKeypad command. No input needed."]]
 		command "constructMakerApiHsmUrl",[[name:"Note",type:"",description:"This is used to set the URL (in preferences) needed to pull the HSM Status when you are running HSM on another HSM, sharing this keypad through Hub Mesh, and want to force keypad status thru HSM. Not needed otherwise. Refresh screen after running this command to load updated preferences."],[name: "IP Address", type:"STRING",description: "IP address of Hub running HSM"],[name:"appID", type:"NUMBER", description:"MakerAPI's App ID on Hub running HSM"],[name:"accessToken",type:"STRING",description:"MakerAPI's Access Token on Hub running HSM."]]
 		
         attribute "alarmStatusChangeTime", "STRING"
@@ -60,7 +60,9 @@ metadata {
         attribute "volKeytone", "NUMBER"
         attribute "volSiren", "NUMBER"
 
-        fingerprint mfr:"0346", prod:"0101", deviceId:"0301", inClusters:"0x5E,0x98,0x9F,0x6C,0x55", deviceJoinName: "Ring Alarm Keypad G2"
+        fingerprint mfr:"0346", prod:"0101", deviceId:["0301","0401"], inClusters:"0x5E,0x98,0x9F,0x6C,0x55", deviceJoinName: "Ring Alarm Keypad G2"
+        //inClusters: "0x5E,0x98,0x9F,0x6C,0x55", Secure In Clusters: "0x59,0x85,0x80,0x70,0x5A,0x6F,0x7A,0x87,0x72,0x8E,0x71,0x73,0x86"
+
     }
     preferences {
         input name: "about", type: "paragraph", element: "paragraph", title: "Ring Alarm Keypad G2 Community Driver", description: "${version()}<br>Note:<br>The first 4 Tones are alarm sounds that also flash the Red Indicator Bar on the keypads. The rest are more pleasant sounds that could be used for a variety of things."
@@ -90,9 +92,7 @@ metadata {
 			input name: "makerApiHsmUrl", type: "string", title: "Using 'Force HSM' & Hub Mesh? Enter Maker API URL for HSM", defaultValue: "", description: "If you are using Hub Mesh, forcing state thru HSM, and have HSM running on a different hub than this keypad, then you you need to enter the URL to pull the hsmStatus using MakerAPI from the hub running HSM. If you don't know how to do it, use the command that appeared in the commands menu of Device Details. <b>Note</b> Hub running HSM should have a status IP from your router so URL doesn't change."
 		}
 		input name: "syncButton", type: "enum", title: "Button to re-sync with HSM/Mode", description: "Re-syncing the keypad can help in the case of odd behaviour/malfunctioning. If this doesn't work, use the resetKeypad command. <b>Note</b> If keypad state is forced thru HSM or Mode, this will sync with where it is forced. If not, a new preference will appear after you <b>SAVE</b> preferences with a different 'Force keypad's state thru...' preference. ", defaultValue: "X button", options: ["N/A","X button","Checkmark button"] //MikeNYC88 - added this
-		if(forceStateChangeThru !="HSM" && forceStateChangeThru != "Mode"){
-			input name: "syncTo", type: "enum", title: "Resync to HSM or Mode?", description: "By hitting the resync button, what do you want to resync with?", defaultValue: "HSM", options: ["HSM","Mode"] //MikeNYC88 - added this
-		}
+        input name: "buttonSyncsTo", type: "enum", title: "Resync to HSM or Mode?", description: "By hitting the resync button, what do you want to resync with? <B>Note :</b> If forcing keypad state thru HSM or Mode, this must match.", defaultValue: "HSM", options: ["HSM","Mode","Don't Sync"] //MikeNYC88 - added this
 		input name: "partialFunctionValue", type: "enum", title: "Home Button Action", options: [
             ["armHome":"Arm Home (default)"],
             ["armNight":"Arm Night"],
@@ -132,7 +132,34 @@ metadata {
         0x0B: [securityKeypadState: "armed away", hsmCmd: "armAway"]
 ]
 
-@Field static Map CMD_CLASS_VERS=[0x86:2, 0x70:1, 0x20:1, 0x86:3] //MikeNYC88 - I believe these are inaccurate...
+@Field static List UNSECURE_CLASSES=[
+        0x5E, // Z-Wave Plus Info V2
+        0x98, // Security S0
+        0x9F, // Security S2
+        0x6C, // Supervision
+        0x55  // Transport Service V2
+    ]
+
+@Field static Map CMD_CLASS_VERS=[        
+		0x59 : 3, // Association Group Information V3
+        0x85 : 2, // Association V2
+        0x80 : 2, // Battery V2 (Tech Manual says V2, Zwave alliance says V1)
+        0x70 : 4, // Configuration V4
+        0x5A : 1, // Device Reset Locally
+        0x6F : 1, // Entry Control
+        0x7A : 5, // Firmware Update Meta-Data V5
+        0x87 : 3, // Indicator V3
+        0x72 : 2, // Manufacturer Specific V2
+        0x8E : 3, // Multi-Channel Association V3
+        0x71 : 8, // Notification V8
+        0x73 : 1, // Powerlevel
+        0x98 : 1, // Security S0
+        0x9F : 1, // Security S2
+        0x6C : 1, // Supervision
+        0x55 : 2, // Transport Service V2
+        0x86 : 3, // Version V3
+        0x5E : 2  // Z-Wave Plus Info V2
+    ]
 
 // Methods - Mandatory
 void uninstalled() {
@@ -156,6 +183,13 @@ void updated() {
 		device.updateSetting("syncButton", [value: "X button", type: "string"])
 		warn("syncButton can't be checkmark when validateCheck is true. Changing syncButton to 'X button'")
 	}
+    if(forceStateChangeThru =="HSM"){
+        device.updateSetting("syncTo", [value: "HSM", type: "string"])
+        warn("Syncing must be done with HSM when forcing status thru HSM.")
+    } else if (forceStateChangeThru == "Mode"){
+        device.updateSetting("syncTo", [value: "Mode", type: "string"])
+        warn("Syncing must be done with Mode when forcing status thru Mode (via app).")
+    }
 }
 
 void installed() {
@@ -207,12 +241,12 @@ void configure() {
     if (!state.initialized) initializeVars()
     if (!state.keypadConfig) initializeVars()
     runIn(5,pollDeviceData, [misfire: "ignore"])
-	switch (forceStateChangeThru){
+	switch (buttonSyncsTo){
 		case "HSM" :
-			syncKeypadToHSM() // added by MikeNYC88
+        	syncKeypad("HSM")
 			break
 		case "Mode" :
-			syncKeypadToMode()
+        	syncKeypad("Mode")
 			break
 		default :
 			keypadUpdateStatus(state.keypadStatus, state.type, state.code)
@@ -260,8 +294,9 @@ def confirmAppDriven(data) { //This just makes sure it was driven by an app (cou
 	def command = data.command
 	def delay = data.delay
 	def commandEvent
-	def events = device.eventsSince(new Date() - 1/2880) // Get events from the past 30 seconds
-
+	use(TimeCategory) {
+    	def events = device.eventsSince(new Date() - 30.seconds)
+	}
 	if (command) {
 		if (command == "armNight") {
 			commandEvent = events.find { it.name == "command-armNight"}
@@ -295,26 +330,70 @@ def confirmAppDriven(data) { //This just makes sure it was driven by an app (cou
 	}
 }
 
-def syncKeypadToMode() {
-	trace("In Method : syncKeypadToMode()")
-	state.code = ""
+def syncKeypad(syncTo, note = "from command, isn't used") {
+    trace("In Method : syncKeypad(${syncTo})")
+    state.code = ""
     state.type = "physical"
-	def locMode = location.getMode().toString()
-	debug("Syncing Keypad to Mode, location.getMode() : ${locMode}")
-	switch (locMode){
-		case partialMode :
-			keypadUpdateStatus(0x0A, state.type, state.code)
-			break
-		case disarmMode :
-			keypadUpdateStatus(0x02, state.type, state.code)
-			break
-		case awayMode :
-			keypadUpdateStatus(0x0B, state.type, state.code)
-			break
-		default :
-			error("Failed to sync keypad to Mode state since Mode state isn't associated with a Keypad State in preferences. Current Mode: ${locMode}. Disarmed Mode: ${disarmMode}. Partial Mode: ${partialMode}. Away Mode: ${awayMode}")
-			break
-	}
+    switch (syncTo) {
+        case "HSM" : 
+        	    def hsmState
+                if (makerApiHsmUrl) {
+                    hsmState = pullExternalHubHsmStatus()
+                } else {
+                    hsmState = location.hsmStatus
+                }
+                debug("Syncing Keypad to HSM, hsmStatus : ${hsmState}")
+                switch (hsmState){
+                    case ["armedAway", "armingAway"]:
+                        keypadUpdateStatus(0x0B, state.type, state.code)
+                        if (hsmState == armingAway) {
+                            warn("Synced keypad to HSM state : HSM was mid-delay in armingAway, but Keypad was set to armedAway with no delay.")
+                        }
+                    break
+                    case ["armedHome", "armingHome"]:
+                        keypadUpdateStatus(0x0A, state.type, state.code)
+                        if (hsmState == armingHome) {
+                            warn("Synced keypad to HSM state : HSM was mid-delay in armingHome, but Keypad was set to armedHome with no delay.")
+                        }
+                    break
+                    case ["armedNight", "armingNight"]:
+                        keypadUpdateStatus(0x00, state.type, state.code)
+                        if (hsmState == armingNight) {
+                            warn("Synced keypad to HSM state : HSM was mid-delay in armingNight, but Keypad was set to armedNight with no delay.")
+                        }
+                    break
+                    case "disarmed":
+                        keypadUpdateStatus(0x02, state.type, state.code)
+                    break
+                    case "allDisarmed":
+                        keypadUpdateStatus(0x02, state.type, state.code)
+                    break
+                    default : //for armingAway, armingNight, armingHome
+                        error("Failed to sync keypad to HSM state since HSM state is non-standard : ${hsmState}")
+                    break
+                }
+        	break
+        case "Mode" :
+            def locMode = location.getMode().toString()
+            debug("Syncing Keypad to Mode, location.getMode() : ${locMode}")
+            switch (locMode){
+                case partialMode :
+                    keypadUpdateStatus(0x0A, state.type, state.code)
+                    break
+                case disarmMode :
+                    keypadUpdateStatus(0x02, state.type, state.code)
+                    break
+                case awayMode :
+                    keypadUpdateStatus(0x0B, state.type, state.code)
+                    break
+                default :
+                    error("Failed to sync keypad to Mode state since Mode state isn't associated with a Keypad State in preferences. Current Mode: ${locMode}. Disarmed Mode: ${disarmMode}. Partial Mode: ${partialMode}. Away Mode: ${awayMode}")
+                    break
+            }
+        	break
+        default :
+        	break
+    }
 }
 
 def checkAgainstMode(data) {
@@ -349,48 +428,6 @@ def checkAgainstMode(data) {
 	}
 }
 	
-def syncKeypadToHSM() { // added by MikeNYC88
-	trace("In Method : syncKeypadToHSM()")
-    state.code = ""
-    state.type = "physical"
-	def hsmState
-	if (makerApiHsmUrl) {
-		hsmState = pullExternalHubHsmStatus()
-	} else {
-		hsmState = location.hsmStatus
-	}
-	debug("Syncing Keypad to HSM, hsmStatus : ${hsmState}")
-    switch (hsmState){
-        case ["armedAway", "armingAway"]:
-			keypadUpdateStatus(0x0B, state.type, state.code)
-			if (hsmState == armingAway) {
-				warn("Synced keypad to HSM state : HSM was mid-delay in armingAway, but Keypad was set to armedAway with no delay.")
-			}
-        break
-        case ["armedHome", "armingHome"]:
-			keypadUpdateStatus(0x0A, state.type, state.code)
-			if (hsmState == armingHome) {
-				warn("Synced keypad to HSM state : HSM was mid-delay in armingHome, but Keypad was set to armedHome with no delay.")
-			}
-        break
-        case ["armedNight", "armingNight"]:
-			keypadUpdateStatus(0x00, state.type, state.code)
-			if (hsmState == armingNight) {
-				warn("Synced keypad to HSM state : HSM was mid-delay in armingNight, but Keypad was set to armedNight with no delay.")
-			}
-        break
-        case "disarmed":
-			keypadUpdateStatus(0x02, state.type, state.code)
-        break
-        case "allDisarmed":
-			keypadUpdateStatus(0x02, state.type, state.code)
-        break
-        default : //for armingAway, armingNight, armingHome
-			error("Failed to sync keypad to HSM state since HSM state is non-standard : ${hsmState}")
-        break
-    }
-}
-
 def checkAgainstHSM(data) { // added by MikeNYC88
 	trace("In Method : checkAgainstHSM(${data})")
 	def command = data.command
@@ -579,12 +616,12 @@ void parseEntryControl(Short command, List<Short> commandBytes) {
                 long ems = now.getTime()
                 if(!code) code = "check mark"
                 if (syncButton == "Checkmark button") {
-					switch (forceStateChangeThru){
+					switch (buttonSyncsTo){
 						case "HSM" :
-							syncKeypadToHSM() // added by MikeNYC88
+                        	syncKeypad("HSM")
 							break
 						case "Mode" :
-							syncKeypadToMode()
+                        	syncKeypad("Mode")
 							break
 					}
 				}
@@ -636,12 +673,12 @@ void parseEntryControl(Short command, List<Short> commandBytes) {
             case 25: //the 'X' button was pressed - MikeNYC88 added
         		state.type="physical"
                 if (syncButton == "X button") {
-					switch (forceStateChangeThru){
+					switch (buttonSyncsTo){
 						case "HSM" :
-							syncKeypadToHSM() // added by MikeNYC88
+                        	syncKeypad("HSM")
 							break
 						case "Mode" :
-							syncKeypadToMode()
+                        	syncKeypad("Mode")
 							break
 					}
 				}
@@ -1394,7 +1431,24 @@ void deleteCode(codeposition) {
 //Methods - Send Keypad Commands
 List<String> commands(List<String> cmds, Long delay=300) {
 	trace("In Method : commands(List<String> cmds = ${cmds}, Long delay = ${delay})")
-    return delayBetween(cmds.collect{ zwaveSecureEncap(it) }, delay)
+    delayedCmds = delayBetween(cmds.collect { cmd -> 
+        def command = cmd.toString() //just in case
+        if (cmd.substring(0, Math.min(command.length(), 5)) == "delay"){
+            cmd
+        } else {
+            def commandClassHex = command.substring(0, 2)
+            def commandClassHexInt = Integer.parseInt(commandClassHex, 16)
+            if (UNSECURE_CLASSES.contains(commandClassHexInt)) { 
+                debug("Unsecure Command: ${cmd}")
+                command
+            } else { 
+                debug("Secure Command: ${cmd} -> ${zwaveSecureEncap(cmd)}")
+                zwaveSecureEncap(command) 
+            }
+        }
+	}, delay)
+	debug("Full list of commands : ${delayedCmds}")
+	return delayedCmds    
 }
 
 void sendToDevice(List<String> cmds, Long delay=300) {
@@ -1404,7 +1458,15 @@ void sendToDevice(List<String> cmds, Long delay=300) {
 
 void sendToDevice(String cmd, Long delay=300) {
 	trace("In Method : sendToDevice(String cmd = ${cmd}, Long delay = ${delay})")
-    sendHubCommand(new hubitat.device.HubAction(zwaveSecureEncap(cmd), hubitat.device.Protocol.ZWAVE))
+    def commandClassHex = cmd.substring(0, 2)
+	def commandClassHexInt = Integer.parseInt(commandClassHex, 16)
+    if (UNSECURE_CLASSES.contains(commandClassHexInt)){
+        sendHubCommand(new hubitat.device.HubAction(cmd, hubitat.device.Protocol.ZWAVE))
+		debug("Unsecure Command Sent: ${cmd}")
+	} else {
+        sendHubCommand(new hubitat.device.HubAction(zwaveSecureEncap(cmd), hubitat.device.Protocol.ZWAVE))
+		debug("Secure Command Sent: ${cmd} -> ${zwaveSecureEncap(cmd)}")
+	}    
 }
 
 //Methods - Receive Keypad Commands, Parse, Act, and reply
