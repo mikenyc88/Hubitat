@@ -26,7 +26,7 @@ def version() {
 def modes = location.getModes().collect { it.name }
 
 metadata {
-    definition (name: "Ring Alarm Keypad G2 - Advanced Driver", namespace: "MikeNYC88", author: "Mike Dam", importUrl: "https://github.com/mikenyc88/Hubitat/blob/main/Drivers/Ring-Keypad-G2-Driver.groovy") { //Added MikeNYC Edit to name
+    definition (name: "Ring Alarm Keypad G2 - Advanced Driver", namespace: "MikeNYC88", author: "Mike Dam", importUrl: "https://raw.githubusercontent.com/mikenyc88/Hubitat/refs/heads/main/Drivers/Ring-Keypad-G2-Driver.groovy") { //Added MikeNYC Edit to name
         capability "Actuator"
         capability "Sensor"
         capability "Configuration"
