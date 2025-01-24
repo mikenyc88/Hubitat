@@ -330,7 +330,7 @@ def confirmAppDriven(data) { //This just makes sure it was driven by an app (cou
 	}
 }
 
-def syncKeypad(syncTo, note = "from command, isn't used") {
+def syncKeypad(syncTo = buttonSyncsTo, note = "from command, isn't used") {
     trace("In Method : syncKeypad(${syncTo})")
     state.code = ""
     state.type = "physical"
