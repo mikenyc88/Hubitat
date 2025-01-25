@@ -1,6 +1,6 @@
 /*
 // Version :		0.1.0
-// Version date : 	23 Jan 2025
+// Version date : 	25 Jan 2025
 //
 // GitHub Url : 	https://github.com/mikenyc88/Hubitat/
 // Author Profile :	https://community.hubitat.com/u/mikenyc/summary
@@ -60,7 +60,7 @@ metadata {
         attribute "volKeytone", "NUMBER"
         attribute "volSiren", "NUMBER"
 
-        fingerprint mfr:"0346", prod:"0101", deviceId:["0301","0401"], inClusters:"0x5E,0x98,0x9F,0x6C,0x55,0x59,0x85,0x80,0x70,0x5A,0x6F,0x7A,0x87,0x72,0x8E,0x71,0x73,0x86", deviceJoinName: "Ring Alarm Keypad G2"
+        fingerprint mfr:"0346", prod:"0101", deviceId:["0301","0401"], inClusters:"0x5E,0x98,0x9F,0x6C,0x55,0x59,0x85,0x80,0x70,0x5A,0x6F,0x7A,0x87,0x72,0x8E,0x71,0x73,0x86", outClusters: "0x85,0x80,0x70,0x87,0x72,0x71,0x6C,0x86,0x6F", deviceJoinName: "Ring Alarm Keypad G2"
         //inClusters: "0x5E,0x98,0x9F,0x6C,0x55", Secure In Clusters: "0x59,0x85,0x80,0x70,0x5A,0x6F,0x7A,0x87,0x72,0x8E,0x71,0x73,0x86"
 
     }
@@ -259,7 +259,7 @@ void pollDeviceData() {
     List<String> cmds = []
     cmds.add(zwave.versionV3.versionGet().format())
     cmds.add(zwave.manufacturerSpecificV2.deviceSpecificGet(deviceIdType: 1).format())
-    cmds.add(zwave.batteryV1.batteryGet().format())
+    cmds.add(zwave.batteryV2.batteryGet().format()) // might actually be V1, differing documentation was released
     cmds.add(zwave.notificationV8.notificationGet(notificationType: 8, event: 0).format())
     cmds.add(zwave.notificationV8.notificationGet(notificationType: 7, event: 0).format())
     cmds.addAll(processAssociations())
@@ -1090,10 +1090,10 @@ void proximitySensorHandler(onInstall) { //MikeNYC88 added the onInstall to ensu
 	trace("In Method : proximitySensorHandler(${onInstall})")
     if(disableProximitySensor || onInstall == true) { //MikeNYC88 added the onInstall to ensure that it is disabled on Install
         info("Turning the Proximity Sensor OFF")
-        sendToDevice(new hubitat.zwave.commands.configurationv1.ConfigurationSet(parameterNumber: 15, size: 1, scaledConfigurationValue: 0).format())
+        sendToDevice(new hubitat.zwave.commands.configurationv4.ConfigurationSet(parameterNumber: 15, size: 1, scaledConfigurationValue: 0).format())
     } else {
         info("Turning the Proximity Sensor ON")
-        sendToDevice(new hubitat.zwave.commands.configurationv1.ConfigurationSet(parameterNumber: 15, size: 1, scaledConfigurationValue: 1).format())
+        sendToDevice(new hubitat.zwave.commands.configurationv4.ConfigurationSet(parameterNumber: 15, size: 1, scaledConfigurationValue: 1).format())
     }
 }
 
@@ -1114,7 +1114,7 @@ def setVolumeSettings() {
         } else {
             //device.updateSetting("volAnnouncement", [value: newAnnouncementVol.toInteger(), type: "number"]) // MikeNYC88 added
             nAnnouncementVol = newAnnouncementVol.toInteger()
-            sendToDevice(new hubitat.zwave.commands.configurationv1.ConfigurationSet(parameterNumber: 4, size: 1, scaledConfigurationValue: nAnnouncementVol).format())
+            sendToDevice(new hubitat.zwave.commands.configurationv4.ConfigurationSet(parameterNumber: 4, size: 1, scaledConfigurationValue: nAnnouncementVol).format())
             eventProcess(name:"volAnnouncement", value: newAnnouncementVol, isStateChange:true)
         }
     } else {
@@ -1136,7 +1136,7 @@ def setVolumeSettings() {
         } else {
             //device.updateSetting("volKeytone", [value: newKeytoneVol.toInteger(), type: "number"]) // MikeNYC88 added
             nVolKeytone = newKeytoneVol.toInteger()
-            sendToDevice(new hubitat.zwave.commands.configurationv1.ConfigurationSet(parameterNumber: 5, size: 1, scaledConfigurationValue: nVolKeytone).format())
+            sendToDevice(new hubitat.zwave.commands.configurationv4.ConfigurationSet(parameterNumber: 5, size: 1, scaledConfigurationValue: nVolKeytone).format())
             eventProcess(name:"volKeytone", value: newKeytoneVol, isStateChange:true)
         }
     } else {
@@ -1158,7 +1158,7 @@ def setVolumeSettings() {
 		} else {
             //device.updateSetting("volSiren", [value: newSirenVol.toInteger(), type: "number"]) // MikeNYC88 added
             nSirenVol = newSirenVol.toInteger()
-            sendToDevice(new hubitat.zwave.commands.configurationv1.ConfigurationSet(parameterNumber: 6, size: 1, scaledConfigurationValue: nSirenVol).format()) //sVol).format()) //MikeNYC88 changed to nVol like the other volume settings
+            sendToDevice(new hubitat.zwave.commands.configurationv4.ConfigurationSet(parameterNumber: 6, size: 1, scaledConfigurationValue: nSirenVol).format()) //sVol).format()) //MikeNYC88 changed to nVol like the other volume settings
             eventProcess(name:"volSiren", value: newSirenVol, isStateChange:true)
         }
     } else {
@@ -1581,7 +1581,7 @@ List<String> pollConfigs() {
     List<String> cmds = []
     configParams.each { param, data ->
         if (settings[data.input.name]) {
-            cmds.add(zwave.configurationV1.configurationGet(parameterNumber: param.toInteger()).format())
+            cmds.add(zwave.configurationV4.configurationGet(parameterNumber: param.toInteger()).format())
         }
     }
     return cmds
@@ -1590,13 +1590,13 @@ List<String> pollConfigs() {
 List<String> configCmd(parameterNumber, size, scaledConfigurationValue) {
 	trace("In Method : configCmd(${parameterNumber}, ${size}, ${scaledConfigurationValue})")
     List<String> cmds = []
-    cmds.add(zwave.configurationV1.configurationSet(parameterNumber: parameterNumber.toInteger(), size: size.toInteger(), scaledConfigurationValue: scaledConfigurationValue.toInteger()).format())
-    cmds.add(zwave.configurationV1.configurationGet(parameterNumber: parameterNumber.toInteger()).format())
+    cmds.add(zwave.configurationV4.configurationSet(parameterNumber: parameterNumber.toInteger(), size: size.toInteger(), scaledConfigurationValue: scaledConfigurationValue.toInteger()).format())
+    cmds.add(zwave.configurationV4.configurationGet(parameterNumber: parameterNumber.toInteger()).format())
     return cmds
 }
 
-void zwaveEvent(hubitat.zwave.commands.configurationv1.ConfigurationReport cmd) {
-    trace("In Method : zwaveEvent(hubitat.zwave.commands.configurationv1.ConfigurationReport)")
+void zwaveEvent(hubitat.zwave.commands.configurationv4.ConfigurationReport cmd) {
+    trace("In Method : zwaveEvent(hubitat.zwave.commands.configurationv4.ConfigurationReport)")
 	debug("cmd : ${cmd}")
 	if(configParams[cmd.parameterNumber.toInteger()]) {
         Map configParam = configParams[cmd.parameterNumber.toInteger()]
@@ -1610,8 +1610,8 @@ void zwaveEvent(hubitat.zwave.commands.configurationv1.ConfigurationReport cmd) 
 
 	// Battery v1
 
-void zwaveEvent(hubitat.zwave.commands.batteryv1.BatteryReport cmd) {
-	trace("In Method : zwaveEvent(hubitat.zwave.commands.batteryv1.BatteryReport)")
+void zwaveEvent(hubitat.zwave.commands.batteryv2.BatteryReport cmd) { // might be V1, there is differing documentation released
+	trace("In Method : zwaveEvent(hubitat.zwave.commands.batteryv2.BatteryReport)") // might be V1, there is differing documentation released
 	debug("cmd : ${cmd}")
     Map evt = [name: "battery", unit: "%"]
     if (cmd.batteryLevel == 0xFF) {
@@ -1668,7 +1668,7 @@ void zwaveEvent(hubitat.zwave.commands.notificationv8.NotificationReport cmd) {
     if (cmd.notificationType == 8) {
         // power management
         switch (cmd.event) {
-            case 1:
+            case 1: // not used???
                 // Power has been applied
                 info("${device.displayName} Power has been applied")
                 break
@@ -1686,10 +1686,12 @@ void zwaveEvent(hubitat.zwave.commands.notificationv8.NotificationReport cmd) {
                 evt.descriptionText = "${device.displayName} AC mains re-connected"
 				eventProcess(evt)
                 break
+            /*
             case 12: //MikeNYC88 - I don't think this is even an option given the product documentation
                 // battery is charging 
                 info("${device.displayName} Battery is charging")
                 break
+			*/
 			case 5:
                 // brownout
                 info("${device.displayName} experienced a 'brownout' ('Voltage Drop/Drift')")
@@ -1725,10 +1727,7 @@ void zwaveEvent(hubitat.zwave.commands.notificationv8.NotificationReport cmd) {
 			}       
         }
     }
-}
-
-void zwaveEvent(hubitat.zwave.commands.basicv1.BasicReport cmd) {
-	trace("In Method : zwaveEvent(hubitat.zwave.commands.basicv1.BasicReport)")
-	warn("skipped basicv1.BasicReport cmd : ${cmd}")
-    // this is redundant/ambiguous and I don't care what happens here
+    if (cmd.notificationType == 7) {
+        warn("Device gave warning : Dropped Frame Notification. Response not fully programmed yet. Full Notification Command : ${cmd}")
+    }
 }
