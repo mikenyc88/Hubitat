@@ -1,5 +1,5 @@
 /*
-// Version :		0.1.3
+// Version :		0.1.4
 // Version date : 	26 Jan 2025
 //
 // GitHub Url : 	https://github.com/mikenyc88/Hubitat/
@@ -16,6 +16,7 @@
 // Release notes :
 		0.1.0  :	Initial BETA Release
 		0.1.1to3 :	Added notes & time of button push. Removed Refresh() method
+  		0.1.4 :		Corrected fingerprint
 */
 
 import groovy.transform.Field
@@ -56,8 +57,12 @@ metadata {
         //attribute "pushed  ", "NUMBER" 					//Not added since included in the capability "PushableButton"
                 
 		//Fingerprints help during pairing. To generate a fingerprint for a device already paired to the hub, switch to the "Device" driver, run the "Get Info" command, and observe the "fingerprint" output in "Logs." These can also be built manually if you know the required information ("clusters" corresponds to "command classes" for Z-Wave). 
-        fingerprint  mfr:"0346", prod:"0201", deviceId:["0301", "0401", "0601"], inClusters: "0x5E,0x6C,0x55,0x9F,0x59,0x85,0x80,0x70,0x5A,0x7A,0x87,0x72,0x8E,0x71,0x73,0x86,0x84" , outClusters: "0x80,0x70,0x72,0x71,0x6C,0x86,0x84", deviceJoinName: "Ring Alarm Contact Sensor G2" 
-        //inClusters:"0x5E,0x6C,0x55,0x9F", secureInClusters: "0x59,0x85,0x80,0x70,0x5A,0x7A,0x87,0x72,0x8E,0x71,0x73,0x86,0x84" // There is no real need to separate out the secure vs insecure clusters. The device should tell the hub which are secure upon pairing. 
+        	//Each unique combination of mfr, prod, and deviceID needs its own fingerprint line. 
+	fingerprint  mfr:"0346", prod:"0201", deviceId:"0301", inClusters: "0x5E,0x6C,0x55,0x9F,0x59,0x85,0x80,0x70,0x5A,0x7A,0x87,0x72,0x8E,0x71,0x73,0x86,0x84" , outClusters: "0x80,0x70,0x72,0x71,0x6C,0x86,0x84", deviceJoinName: "Ring Alarm Contact Sensor G2" 
+        fingerprint  mfr:"0346", prod:"0201", deviceId:"0401", inClusters: "0x5E,0x6C,0x55,0x9F,0x59,0x85,0x80,0x70,0x5A,0x7A,0x87,0x72,0x8E,0x71,0x73,0x86,0x84" , outClusters: "0x80,0x70,0x72,0x71,0x6C,0x86,0x84", deviceJoinName: "Ring Alarm Contact Sensor G2" 
+        fingerprint  mfr:"0346", prod:"0201", deviceId:"0601", inClusters: "0x5E,0x6C,0x55,0x9F,0x59,0x85,0x80,0x70,0x5A,0x7A,0x87,0x72,0x8E,0x71,0x73,0x86,0x84" , outClusters: "0x80,0x70,0x72,0x71,0x6C,0x86,0x84", deviceJoinName: "Ring Alarm Contact Sensor G2" 
+        
+	//inClusters:"0x5E,0x6C,0x55,0x9F", secureInClusters: "0x59,0x85,0x80,0x70,0x5A,0x7A,0x87,0x72,0x8E,0x71,0x73,0x86,0x84" // There is no real need to separate out the secure vs insecure clusters. The device should tell the hub which are secure upon pairing. 
         //Ensure all inClusters are shown in the Device Details -> Device Info for proper operation
         //Note that a command class's cluster (in HEX) can be found in Hubitat's 'Z-Wave Classes' developer documentation
     }
