@@ -19,7 +19,7 @@ import groovy.transform.Field
 
 metadata {
 
-    definition (name: "Ring Alarm Contact Sensor G2 - Advanced Driver", namespace: "MikeNYC88", author: "Mike Dam", importUrl: "https://github.com/mikenyc88/Hubitat/blob/main/Drivers/Ring-Contact-Sensor-G2-Driver.groovy") {
+    definition (name: "Ring Alarm Contact Sensor G2 - Advanced Driver", namespace: "MikeNYC88", author: "Mike Dam", importUrl: "https://raw.githubusercontent.com/mikenyc88/Hubitat/refs/heads/main/Drivers/Ring-Contact-Sensor-G2-Driver.groovy") {
         
         capability "Actuator"
         capability "Sensor"
