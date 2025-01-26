@@ -1,5 +1,5 @@
 /*
-// Version :		0.1.2
+// Version :		0.1.3
 // Version date : 	26 Jan 2025
 //
 // GitHub Url : 	https://github.com/mikenyc88/Hubitat/
@@ -46,8 +46,8 @@ metadata {
         command "pollDeviceData", [[name: "Note 1", type: "", description: "This will poll the device for status & device information (firmware, etc.). <b>Note:</b> This is a sleeping device, so polling will not happen until the device wakes up again (not just status change)."]]     
         
         //Add attributes so Rules & Apps know what attributes it can subscribe to
-        attribute "buttonPushTime", "STRING"
-        attribute "buttonPushEpochTime", "NUMBER"
+        attribute "buttonPushTime", "STRING"				//Added so that the user as a readable field of when the button was pushed
+        attribute "buttonPushEpochTime", "NUMBER"			//Added so that a rule/app can do math on how long it's been since a button push
         //attribute "battery", "NUMBER" 					//Not added since included in the capability "Battery"
         //attribute "contact ", "ENUM", ["closed", "open"] 	//Not added since included in the capability "ContactSensor"
         //attribute "tamper", "ENUM", ["clear", "detected"] //Not added since included in the capability "TamperAlert"
