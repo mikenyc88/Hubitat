@@ -1,5 +1,5 @@
 /*
-// Version :		0.1.1
+// Version :		0.1.2
 // Version date : 	26 Jan 2025
 //
 // GitHub Url : 	https://github.com/mikenyc88/Hubitat/
@@ -47,6 +47,7 @@ metadata {
         
         //Add attributes so Rules & Apps know what attributes it can subscribe to
         attribute "buttonPushTime", "STRING"
+        attribute "buttonPushEpochTime", "NUMBER"
         //attribute "battery", "NUMBER" 					//Not added since included in the capability "Battery"
         //attribute "contact ", "ENUM", ["closed", "open"] 	//Not added since included in the capability "ContactSensor"
         //attribute "tamper", "ENUM", ["clear", "detected"] //Not added since included in the capability "TamperAlert"
@@ -278,11 +279,14 @@ def oneTimeShot(delay){
 
 //method that is called when the command "push" is used
 void push(){
+    Date now = new Date()
+    long ems = now.getTime()
     Map evt = [name:"pushed", value:1, isStateChange:true, descriptionText:"${device.displayName} Button Pushed"]
     eventProcess(evt)
-    Date now = new Date()
-    Map evt2 = [name:"buttonPushTime", value:"${now}", isStateChange:true]
+   	Map evt2 = [name:"buttonPushTime", value:"${now}", isStateChange:true]
     eventProcess(evt2)
+    Map evt3 = [name:"buttonPushEpochTime", value: ems, isStateChange:true]
+    eventProcess(evt3)
 }
 
 //Although you don't need a single method to process your events, I did this so I wouldn't have to have multiple Info() methods being called. This 1 method will always send it to the Info() method for me.
