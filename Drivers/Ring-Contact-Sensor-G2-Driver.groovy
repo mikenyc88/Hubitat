@@ -211,6 +211,10 @@ void initializeVars() {
     sendEvent(name:"numberOfButtons", value:1)
     sendEvent(name:"pushed", value:1)
     sendEvent(name:"tamper", value:"clear")
+	Date now = new Date()
+    long ems = now.getTime()
+    sendEvent(name:"buttonPushTime", value:"${now}")
+    sendEvent(name:"buttonPushEpochTime", value: ems)
     state.initialized=true
     info("Variables initialized.")
 }
