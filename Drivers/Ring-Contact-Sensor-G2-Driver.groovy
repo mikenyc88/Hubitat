@@ -4,7 +4,7 @@
 //
 // GitHub Url : 	https://github.com/mikenyc88/Hubitat/
 // Author Profile :	https://community.hubitat.com/u/mikenyc/summary
-// Community Docs : https://community.hubitat.com/t/149189
+// Community Docs :	https://community.hubitat.com/t/149189
 // Donation Url :	https://account.venmo.com/u/Mike--Dam
 //
 // License URL : 	https://github.com/mikenyc88/Hubitat/blob/main/LICENSE
